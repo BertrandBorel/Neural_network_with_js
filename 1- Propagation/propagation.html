@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- Insertion du code Javascript-->
+    <script>
+
+// trois couches de neurones      
+var Input = [];
+var Hidden = [];
+var Output = [];
+
+// poids synaptiques
+var Wh = [];
+var Wo = [];
+
+// fonction d'initialisation des différents tableaux :
+function reset () {
+    Input = [0, 0, 0, 0];
+    Hidden = [0, 0, 0, 0];
+    Output = [0, 0] ;
+
+// coefficients synaptiques des liens reliant les neurones entre eux (input => hidden)
+    Wh = [[0.5, 0.5, 0.5, 0.5],
+          [0.5, 0.5, 0.5, 0.5],
+          [0.5, 0.5, 0.5, 0.5],
+          [0.5, 0.5, 0.5, 0.5]];
+
+// poids des connexions de la couche cachée à la couche de sortie (hidden => output)
+    Wo = [[0.5, 0.5, 0.5, 0.5],
+          [0.5, 0.5, 0.5, 0.5]];
+
+}
+
+// Données présentées au réseau 
+var input_data = [0, 1, 0, 1];
+
+// fonction d'activation : sigmoïde
+function sigmoid (x) {
+    return 1 / (1 + Math.pow(Math.E, (-1 * x)));
+}
+
+// propagate () : propage les données de l'input vers l'output
+function propagate (d) {
+    for (var i = 0; i < Input.length; i++) {
+        Input[i] = d[i];
+    }
+
+    // propagation dans la couche cachée (hidden)
+    Xh = [0, 0, 0, 0];
+    for (var j = 0; j < Hidden.length; j++) {
+        for (var i = 0; i < Input.length; i++) {
+            Xh[j] += Wh[j][i] * Input[i];
+        }
+    }
+
+    // application de la fonction d'activation sur les valeurs de Xh (hidden)
+    for (var j = 0; j < Hidden.length; j++) {
+        Hidden[j] = sigmoid(Xh[j]);
+    }
+
+    // propagation dans la couche de sortie (hidden vers output)
+    Xo = [0, 0];
+    for (var k = 0; k < Output.length; k++) {
+        for (var j = 0; j < Hidden.length; j++) {
+            Xo[k] += Wo[k][j] * Hidden[j];
+        }
+    }
+    
+    // application de la fonction d'activation sur les valeurs de Xo (sortie)
+    for (var k = 0; k < Output.length; k++) {
+        Output[k] = sigmoid(Xo[k]);
+        }
+    }
+
+    // Affiche les résultats dans les 2 cellules de la table
+    function display () {
+        document.getElementById('out0').innerHTML = Output[0];
+        document.getElementById('out1').innerHTML = Output[1];
+    }
+
+    </script>
+</head>
+<body>
+
+    <table>
+        <!-- cellules pour afficher les valeurs des 2 neurones de la couche de sortie -->
+        <tr>
+            <td>Output 0: </td>
+            <td id="out0"> 0.0</td>
+        </tr>
+        <tr>
+            <td>Output 1: </td>
+            <td id="out1"> 0.0</td>
+        </tr>
+    </table>
+
+    <!-- Seconde table : contient dees boutons pour :
+            - déclencher la fonction reset()
+            - exécuter la fonction propagate() et display() -->
+    <table>
+        <tr>
+            <td>
+                <input type="button" value="Reset" onclick="reset ();">
+            </td>
+            <td>
+                <input type="button" value="Propagate" onclick="propagate (input_data); display ();">
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>
