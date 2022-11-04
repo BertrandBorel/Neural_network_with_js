@@ -1,0 +1,236 @@
+<!-- Modifications :
+Ajout de zones de saisies pour les données d'entrée et de sortie souhaitées après apprentissage 
+Ajout d'un bouton supplémentaire pour activer la fonction learn()
++ modification de la fonction display()
++ ajout d'un bouton Learn pour lancer l'exécution d'une phase d'apprentissage.
+-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réseau de neurones avec Javascript</title>
+    <!-- Insertion du code Javascript-->
+    <script>
+
+// trois couches de neurones      
+var Input = [];
+var Hidden = [];
+var Output = [];
+
+// poids synaptiques
+var Wh = [];
+var Wo = [];
+
+// taux d'apprentissage
+var alpha = 0.5;
+
+// tableau de données que l'on souhaite obtenir en sortie
+var Target = [0, 0];
+
+// fonction d'initialisation des différents tableaux :
+function reset () {
+    Input = [0, 0, 0, 0];
+    Hidden = [0, 0, 0, 0];
+    Output = [0, 0] ;
+
+// coefficients synaptiques des liens reliant les neurones entre eux (input => hidden)
+    Wh = [[0.5, 0.5, 0.5, 0.5],
+          [0.5, 0.5, 0.5, 0.5],
+          [0.5, 0.5, 0.5, 0.5],
+          [0.5, 0.5, 0.5, 0.5]];
+
+// poids des connexions de la couche cachée à la couche de sortie (hidden => output)
+    Wo = [[0.5, 0.5, 0.5, 0.5],
+          [0.5, 0.5, 0.5, 0.5]];
+
+}
+
+
+// fonction d'activation : sigmoïde
+function sigmoid (x) {
+    return 1 / (1 + Math.pow(Math.E, (-1 * x)));
+}
+
+// propagate () : propage les données de l'input vers l'output
+function propagate () {
+    // copie les données de l'input
+        Input[0] = parseInt(document.getElementById('input0').value) ;
+        Input[1] = parseInt(document.getElementById('input1').value) ;
+        Input[2] = parseInt(document.getElementById('input2').value) ;
+        Input[3] = parseInt(document.getElementById('input3').value) ;
+
+    // propagation dans la couche cachée (hidden)
+    var Xh = [0, 0, 0, 0];
+    for (var j = 0; j < Hidden.length; j++) {
+        for (var i = 0; i < Input.length; i++) {
+            Xh[j] += Wh[j][i] * Input[i];
+        }
+    }
+
+    // application de la fonction d'activation sur les valeurs de Xh (hidden)
+    for (var j = 0; j < Hidden.length; j++) {
+        Hidden[j] = sigmoid(Xh[j]);
+    }
+
+    // propagation dans la couche de sortie (hidden vers output)
+    var Xo = [0, 0];
+    for (var k = 0; k < Output.length; k++) {
+        for (var j = 0; j < Hidden.length; j++) {
+            Xo[k] += Wo[k][j] * Hidden[j];
+        }
+    }
+    
+    // application de la fonction d'activation sur les valeurs de Xo (sortie)
+    for (var k = 0; k < Output.length; k++) {
+        Output[k] = sigmoid(Xo[k]);
+        }
+    }
+
+
+var Err = [];
+    
+function learn () {
+    // target data
+    Target[0] = parseInt(document.getElementById('target0').value) ;
+    Target[1] = parseInt(document.getElementById('target1').value) ;
+    
+    // calcul de l'erreur : Target - Output
+    for (var k = 0; k < Output.length; k++) {
+        Err[k] = Target[k] - Output[k];
+    }
+
+    // calculer les gradients d'erreurs de la couche de sortie
+    var Wog = [[0, 0, 0, 0], [0, 0, 0, 0]] ;
+
+    for (var k = 0; k < Output.length; k++) {
+        for (var j = 0; j < Hidden.length; j++) {
+            Wog[k][j] = -Err[k] * Output[k] * (1 - Output[k]) * Hidden[j];
+        }
+    }
+
+    // calculer les gradients d'erreurs de la couche cachée
+    // boucle for supplémentaire pour rétropropager l'erreur de sortie vers hidden pour l'affecter aux différents neurones
+    // ... en fonction de leurs poids synaptiques
+    var Whg = [[0, 0, 0, 0], [0, 0, 0, 0],
+            [0, 0, 0, 0],[0, 0, 0, 0]];
+
+    for (var j = 0; j < Hidden.length; j++) {
+        for (var i = 0; i < Input.length; i++) {
+            var e = 0;
+            for (var k = 0; k < Output.length; k++)
+                e += Wo[k][j] * Err[k];
+            Whg[j][i] = -e * Hidden[j] * (1 - Hidden[j]) * Input[i];
+
+        }
+    }
+
+    // mise à jour de l'ensemble des poids synaptiques du réseau 
+    // Chaque poids est modifié en lui soustrayant une portion du gradient d'erreur 
+    // .... par l'application du taux d'apprentissage alpha.
+    // Double itération : sur les poids de output et sur ceux de hidden
+
+    // mise à jour des poids de sortie
+    for (var k = 0; k < Output.length; k++) {
+        for (var j = 0; j < Hidden.length; j++) {
+            Wo[k][j] -= alpha * Wog[k][j];
+        }
+    }
+
+    // mise à jour des poids de la couche cachée
+    for (var j = 0; j < Hidden.length; j++) {
+        for (var i = 0; i < Input.length; i++) {
+            Wh[j][i] -= alpha * Whg[j][i];
+        }
+    }
+}
+
+    // Affiche les résultats dans les 2 cellules de la table
+    function display () {
+        document.getElementById('out0').innerHTML = Output[0];
+        document.getElementById('Err0').innerHTML = Target[0] - Output[0];
+        document.getElementById('out1').innerHTML = Output[1];
+        document.getElementById('Err1').innerHTML = Target[1] - Output[1];
+    }
+
+    </script>
+</head>
+<body>
+
+    <table>
+        <!-- cellules pour afficher les valeurs des 2 neurones de la couche de sortie -->
+        <tr>
+            <td>Output 0: </td>
+            <td id="out0"> 0.0</td>
+            <td>Error 0 : </td>
+            <td id="Err0"> 0.0</td>
+        </tr>
+        <tr>
+            <td>Output 1: </td>
+            <td id="out1"> 0.0</td>
+            <td>Error 1 : </td>
+            <td id="Err1"> 0.0</td>
+        </tr>
+    </table>
+    <br />
+
+    <!-- Input data : données d'entrées du réseau-->
+    Input Data : 
+    <table border="1">
+        <tr>
+            <td>
+                <input type="text" id="input0" value="0" size="1">
+            </td>
+        <td>
+            <input type="text" id="input1" value="0" size="1" >
+        </td>
+        <td>
+            <input type="text" id="input2" value="0" size="1">
+        </td>
+        <td>
+            <input type="text" id="input3" value="0" size="1">
+        </td>
+        </tr>
+    </table>
+    <br />
+
+
+    <!-- Target data : sorties désirées nécessaires à l'apprentissage -->
+    Target Data : 
+    <table border="1">
+        <tr>
+            <td>
+                <input type="text" id="target0" value="0" size="1">
+            </td>
+            <td>
+                <input type="text" id="target1" value="0" size="1">
+            </td>
+        </tr>
+    </table>
+    <br />
+
+
+
+    <!-- Cette table contient dees boutons pour :
+            - déclencher la fonction reset()
+            - déclencher la fonction d'apprentissage learn()
+            - exécuter la fonction propagate() et display() -->
+    <table>
+        <tr>
+            <td>
+                <input type="button" value="Reset" onclick="reset ();">
+            </td>
+            <td>
+                <input type="button" value="Learn" onclick="learn ();">
+            </td>
+            <td>
+                <input type="button" value="Propagate" onclick="propagate (); display ();">
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>
